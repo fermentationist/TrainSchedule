@@ -1,0 +1,9 @@
+th {
+	font-weight: bold;
+}
+
+.jumbotron {
+	background-color:#7F452C;
+	color:white;
+	text-align: center
+}
