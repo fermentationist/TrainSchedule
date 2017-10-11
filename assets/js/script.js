@@ -21,7 +21,7 @@ function resetDB(){
     database.ref().set({
     });
 }
-resetDB();
+//resetDB();
 
 //form submission listener
 $("#submit-button").on("click", function (event) {
@@ -50,33 +50,34 @@ $("#submit-button").on("click", function (event) {
 var childArray = [];
 
 function renderTableData() {
-    // var now = moment();
-    // var minutesSinceFirstTrain = (now.subtract(moment(snapVal.start, "HH:mm"))).format("m");
-    // var minutesAway = minutesSinceFirstTrain % snapVal.frequency;
-    // var nextArrival = now.add(minutesAway, "m").format("HH:mm");
-    // childArray.push({
-    //     name: snapVal.name,
-    //     destination: snapVal.destination,
-    //     start: snapVal.start,
-    //     frequency: snapVal.frequency,
-    //     nextArrival: nextArrival,
-    //     minutesAway: minutesAway
-    // });
     $("#table-body").empty();
     childArray.forEach(function(child){
+        var now = moment();
+        console.log('now', now);
+        var firstTrain = moment(child.start, "HH:mm");
+        console.log("firstTrain ", firstTrain);
+        var minutesSinceFirstTrain = (moment().subtract(firstTrain)).format("m");
+        console.log('(now.subtract(moment(child.start, "HH:mm")))', (now.subtract(moment(child.start, "HH:mm"))))
+        console.log('(moment(child.start, "HH:mm")).subtract(now)', (moment(child.start, "HH:mm")).subtract(now));
+        console.log("child.start", child.start);
+        console.log("minutesSinceFirstTrain", minutesSinceFirstTrain);
+        child.minutesAway = minutesSinceFirstTrain % child.frequency;
+        console.log("child.minutesAway", child.minutesAway);
+        child.nextArrival = moment().add(child.minutesAway, "m").format("HH:mm");
         var key = child.key
+        console.log('key', key);
         var newRow = $("<tr id='" + key + "'>");
         newRow.append($("<td>").text(child.name));
         newRow.append($("<td>").text(child.destination));
         newRow.append($("<td>").text(child.frequency));
         newRow.append($("<td>").text(child.nextArrival));
         newRow.append($("<td>").text(child.minutesAway));
-        newRow.append(makeButton(key));
+        newRow.append(makeDeleteButton(key));
         $("#table-body").append(newRow);
     });
 }
 
-function makeButton(key){
+function makeDeleteButton(key){
     var deleteButton = $("<button class='btn btn-danger' id='delete-" + key + "'>")
     .text("X")
     .on("click", function(){
@@ -84,28 +85,26 @@ function makeButton(key){
         database.ref(key).remove()
         .then(function() {
             console.log("Remove succeeded.")
+            $("#"+key).remove();
+        //$(this).remove();
+            childArray.forEach(function(child){
+                console.log("kid = ", child);
+                if(child.key === key){
+                    var index = childArray.indexOf(child);
+                    childArray.splice(index, 1);
+                    console.log(childArray[index], " removed.");
+                    console.log('childArray = ', childArray);
+                }
+            });
         })
         .catch(function(error) {
             console.log("Remove failed: " + error.message)
         });
-        $("#"+key).remove();
-        //$(this).remove();
-        childArray.forEach(function(child){
-            if(child.includes(key)){
-                var index = childArray.indexOf(key);
-                childArray.splice(index, 1);
-                console.log(childArray[index] + " removed.");
-                console.log('childArray = ', childArray);
-
-            }
-
-        });
-
     });
     return deleteButton;
 }
 
-
+//update local childArray and re-renderTableData when child is added to database
 database.ref().on("child_added", function (snapshot) {
     var key = snapshot.key;
     var addedChild = snapshot.val();
@@ -114,50 +113,30 @@ database.ref().on("child_added", function (snapshot) {
     for (train in addedChild){
         console.log("prop:", addedChild[train]);
     }
-    var now = moment();
-    var minutesSinceFirstTrain = (now.subtract(moment(addedChild.start, "HH:mm"))).format("m");
-    var minutesAway = minutesSinceFirstTrain % addedChild.frequency;
-    var nextArrival = now.add(minutesAway, "m").format("HH:mm");
     childArray.push({
-        key: addedChild.key,
+        key: key,
         name: addedChild.name,
         destination: addedChild.destination,
         start: addedChild.start,
         frequency: addedChild.frequency,
-        nextArrival: nextArrival,
-        minutesAway: minutesAway
+        nextArrival: null,
+        minutesAway: null
     });
     renderTableData();
 });
 
-
-
-function updateTableData(){
-    console.log('updateTableData() called');
-    database.ref().once("value", function(snapshot){
+//update times on schedule every nSeconds
+function timer(nSeconds){
+    var counter = setInterval(function(){
+        console.log("timer() called");
+        console.log("childArray = ", childArray);
         renderTableData();
-
-    })
+    }, nSeconds * 1000);
 }
-    // var now = moment();
-    // console.log("now", now);        
-    // console.log('$("#table-body").children()', $("#table-body").children())
-    // var rows = $("#table-body").children().prevObject[0].children;
-    // console.log('rows', rows);
-    // var f = $(".frequency-col");
-    // console.log('f', f);
-    // for(row in rows){
-        
 
-    // }
+//start timer
+timer(30);
 
-    
-    // var minutesSinceFirstTrain = (now.subtract(moment(start, "HH:mm"))).format("m");
-    // var minutesAway = minutesSinceFirstTrain % frequency;
-
-// }
-
-//updateTableData();
 
 
 
