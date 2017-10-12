@@ -3,7 +3,32 @@ th {
 }
 
 .jumbotron {
-	background-color:#7F452C;
+	background-color:#337AB7;
 	color:white;
-	text-align: center
+	text-align: center;
+	margin-bottom: 0;
+}
+
+a {
+	color:white;
+}
+
+a :visited {
+	color:white;
+	text-decoration: none;
+}
+
+#current-time {
+	font-weight: bold;
+	font-size: 2em;
+	text-align: center;
+	color:#337AB7;
+}
+
+th {
+	font-size: 1.16em;
+}
+
+.panel-heading {
+	font-size: 1.16em;
 }
