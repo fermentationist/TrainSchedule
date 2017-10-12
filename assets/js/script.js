@@ -56,14 +56,16 @@ function renderTableData() {
         console.log('now', now);
         var firstTrain = moment(child.start, "HH:mm");
         console.log("firstTrain ", firstTrain);
-        var minutesSinceFirstTrain = (moment().subtract(firstTrain)).format("m");
-        console.log('(now.subtract(moment(child.start, "HH:mm")))', (now.subtract(moment(child.start, "HH:mm"))))
-        console.log('(moment(child.start, "HH:mm")).subtract(now)', (moment(child.start, "HH:mm")).subtract(now));
+        var minutesSinceFirstTrain = (moment().diff(firstTrain, "m"));//works
         console.log("child.start", child.start);
         console.log("minutesSinceFirstTrain", minutesSinceFirstTrain);
-        child.minutesAway = minutesSinceFirstTrain % child.frequency;
+        var nextTime = firstTrain.add(Math.ceil(minutesSinceFirstTrain/child.frequency) * child.frequency, "m");
+        //console.log('nextOne', nextOne);
+
         console.log("child.minutesAway", child.minutesAway);
-        child.nextArrival = moment().add(child.minutesAway, "m").format("HH:mm");
+        child.nextArrival = nextTime.format("HH:mm");
+        console.log('nextTime.format("HH:mm")', nextTime.format("HH:mm"));
+        child.minutesAway = nextTime.fromNow();
         var key = child.key
         console.log('key', key);
         var newRow = $("<tr id='" + key + "'>");
